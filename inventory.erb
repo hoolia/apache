@@ -1,0 +1,16 @@
+<% @dialog.each { |key,value| 
+   next if value == nil || value.to_s.empty?
+   value = 'true'  if value.to_s == 't'               %>
+   value = 'false' if value.to_s == 'f'               %>
+<%= key.gsub(/^(.*::)?dialog_/,'') %>=<%= value.to_s %>
+<% } %>
+
+
+<% @vms.select { |vm| vm.tagged_with?("roles", "master") }.each { |vm| %>
+<%= vm.custom_get("hostname").to_s.strip + " ansible_host=" + vm.ipaddresses[0] + " ansible_user=" + @sshUser %>
+<% } %>
+
+[nodes]
+<% @vms.select { |vm| vm.tagged_with?("roles", "node") ||  vm.tagged_with?("roles", "master") }.each { |vm| %>
+<%= vm.custom_get("hostname").to_s.strip + " ansible_host=" + vm.ipaddresses[0] + " ansible_user=" + @sshUser + " openshift_node_labels=\"{'region': 'primary', 'zone': 'default'}\"" %>
+<% } %>
